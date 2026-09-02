@@ -1,0 +1,61 @@
+// ============================================================
+// VCG — global styles
+// The layout is a 1:1 reproduction of the Figma "DESKTOP" frame
+// (absolute positioning). Responsiveness is achieved by scaling
+// the whole canvas to the viewport width (see scripts/main.js),
+// so boxes shrink proportionally and there is no horizontal scroll.
+// ============================================================
+
+$font-mono: 'JetBrains Mono', 'SFMono-Regular', Menlo, monospace;
+$font-body: 'Inter', 'Neue Haas Grotesk Display Pro', 'Helvetica Neue', Arial, sans-serif;
+$font-display: 'Epilogue', 'Neue Haas Grotesk Display Pro', sans-serif;
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;               // never a horizontal scrollbar
+  background: #ffffff;
+  font-family: $font-body;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img { display: block; max-width: none; }
+
+// Viewport-width wrapper. Its height is set in JS to the scaled
+// canvas height so vertical scrolling stays correct.
+.stage {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+// The fixed design-width canvas that holds every absolute node.
+// Scaled down via transform to fit the viewport.
+.canvas {
+  position: relative;
+  transform-origin: top left;
+}
+
+// Every emitted node is an absolutely-positioned box.
+.n {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+}
+
+// Fade-in-up reveal for top-level boxes as they scroll into view.
+// The transform is composed in JS (see main.js) so it stacks with
+// any existing inline transform (e.g. rotated boxes).
+.reveal {
+  opacity: 0;
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.reveal.in {
+  opacity: 1;
+}

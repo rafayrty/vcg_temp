@@ -1,0 +1,17 @@
+{
+  "name": "vcg-desktop",
+  "version": "1.0.0",
+  "description": "The Venture Creative Group — desktop website (ParcelJS + SCSS)",
+  "source": "src/index.html",
+  "scripts": {
+    "start": "parcel",
+    "build": "parcel build --public-url ./",
+    "clean": "rm -rf dist .parcel-cache"
+  },
+  "browserslist": "last 2 Chrome versions, last 2 Firefox versions, last 2 Safari versions",
+  "devDependencies": {
+    "@parcel/transformer-sass": "^2.16.4",
+    "parcel": "^2.12.0",
+    "sass": "^1.77.0"
+  }
+}

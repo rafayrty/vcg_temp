@@ -1,0 +1,698 @@
+{
+ "ecf89aac3c4ac0824d52e9516e5a63a1b326db59": {
+  "node": "108:108",
+  "crop": false
+ },
+ "99be6e334b1d28c1111755ca9a7c22a6392922a8": {
+  "node": "108:109",
+  "crop": false
+ },
+ "0a05ec4c526a4fefbf87b360c5976edadaea4e3e": {
+  "node": "108:112",
+  "crop": true
+ },
+ "779a623de9775e436392d93b5b02dfc34d9c2920": {
+  "node": "108:113",
+  "crop": true
+ },
+ "4075fb9f604879627a847740830469155169d210": {
+  "node": "108:114",
+  "crop": true
+ },
+ "063d3514099267c8912a5142a900da636b9e647f": {
+  "node": "108:115",
+  "crop": true
+ },
+ "8e0083517748432079447617b7e3d86ecf161ffb": {
+  "node": "108:149",
+  "crop": false
+ },
+ "4fbecc7ff246f63322b021a55472e75d164bfe92": {
+  "node": "108:160",
+  "crop": true
+ },
+ "8b272d892b7fb85671df7551a3edd142731c140f": {
+  "node": "108:400",
+  "crop": false
+ },
+ "5752a6161b374329427b0acb7f65ce0614d80b2d": {
+  "node": "108:476",
+  "crop": true
+ },
+ "3c6a8e1187300ec67865d85785f8b79b3a288b1f": {
+  "node": "108:489",
+  "crop": false
+ },
+ "3f438497dd60a94fe26e2a0da7c0261d5d39c1ba": {
+  "node": "108:514",
+  "crop": false
+ },
+ "9ee8482c139e61453b0778ccbb4081f48bdf9ad8": {
+  "node": "108:519",
+  "crop": true
+ },
+ "f0a6ebd4cf86b0aa3c43235b4a5daf3f646af5b6": {
+  "node": "108:522",
+  "crop": false
+ },
+ "f165bc0977219fd7ca780e5b57f0f75ee8a3b006": {
+  "node": "108:542",
+  "crop": true
+ },
+ "dc82b13c8ab4f56d267e4b943208fbf70d1ceffe": {
+  "node": "108:567",
+  "crop": true
+ },
+ "46ce5411a9bed988acbf909c62673546035cdec9": {
+  "node": "108:582",
+  "crop": true
+ },
+ "4bec97bcd6081ef6d8c122c5873eb4d6baccaee7": {
+  "node": "108:584",
+  "crop": true
+ },
+ "dcf671e70ee3e676fb537ed5c8d11a20aef21fc0": {
+  "node": "108:598",
+  "crop": true
+ },
+ "4c7f27074a90dc474aee4e6d6e2bf280a5257a06": {
+  "node": "108:613",
+  "crop": true
+ },
+ "008c23798f75caa025aaef1b6d6c37bf13f2deb2": {
+  "node": "108:618",
+  "crop": true
+ },
+ "ca2b3aa2e5b58fca033e3d8f0dd3e7a5c7690372": {
+  "node": "108:658",
+  "crop": true
+ },
+ "86082a4970f11c5baa602f4b887fe1bc73b289dc": {
+  "node": "108:675",
+  "crop": false
+ },
+ "eb8eb9a80deba672089a20bac1448edd7d85677f": {
+  "node": "108:692",
+  "crop": true
+ },
+ "1687690243b796743e542823d7930499f1df5699": {
+  "node": "108:695",
+  "crop": false
+ },
+ "19f5c17de0414d41fc6089d8bb41b2c200215f8e": {
+  "node": "108:724",
+  "crop": true
+ },
+ "14a3672fa6c9cf8737aa112bcbc44528ac4e44d1": {
+  "node": "108:726",
+  "crop": true
+ },
+ "57853204098cc1c7e14698f2c203d05ae39e91a4": {
+  "node": "108:737",
+  "crop": true
+ },
+ "978e388b0ba54d8c4469dd767d1f7100d4a7db96": {
+  "node": "108:738",
+  "crop": true
+ },
+ "55ceab8bfe489a47e801f4a20d017826a9ba1480": {
+  "node": "108:739",
+  "crop": true
+ },
+ "0d1338f31a97896a78eddd8332b4f83ab1b286c1": {
+  "node": "108:752",
+  "crop": false
+ },
+ "10fe96872511353e7085bdb50440c7a41c0a0c41": {
+  "node": "108:763",
+  "crop": false
+ },
+ "0fc6713585204647afe1a9c3c7055f853d6a46ba": {
+  "node": "108:773",
+  "crop": true
+ },
+ "8d6fbf1f13d2f1d71ef0750c0474495ee159fe90": {
+  "node": "108:785",
+  "crop": false
+ },
+ "cb58175db0c9c847db1eb31ad8cd90122d80135f": {
+  "node": "108:786",
+  "crop": false
+ },
+ "7ce764501a8ca2b5f2ded45acf8acdc33fd3bd18": {
+  "node": "108:787",
+  "crop": false
+ },
+ "c79916e85f76b522334c84e3a37b0a6aac2cc1c1": {
+  "node": "108:788",
+  "crop": false
+ },
+ "6ee9654ca0ffa6edf17764e73e609cbe1d508884": {
+  "node": "108:789",
+  "crop": true
+ },
+ "abae3278e82d726dea38a8c9c8936b6ff64808e3": {
+  "node": "108:790",
+  "crop": false
+ },
+ "98828edc8ca6d9a7f398c16973fe914052ee4a4f": {
+  "node": "108:791",
+  "crop": false
+ },
+ "87425d4e38ef35ec6fe05377ac4929659a761299": {
+  "node": "108:793",
+  "crop": false
+ },
+ "569850459cebb16668b6a146e77f82fd162b3ada": {
+  "node": "108:794",
+  "crop": true
+ },
+ "dbcfad05aa9698bbfd174a6becf6b8dabc2662f8": {
+  "node": "108:805",
+  "crop": false
+ },
+ "e1541cacff33c8358519acb3c2c55a3d0436b5f3": {
+  "node": "108:815",
+  "crop": true
+ },
+ "5462cb6453c1ac048466e36dc255ee2dd0e64916": {
+  "node": "108:817",
+  "crop": false
+ },
+ "7f3a0cc3cdb15947972f35a3e369d4d1b74b202e": {
+  "node": "108:837",
+  "crop": true
+ },
+ "368cdfb458f36737ebacc8858b7f5ad4ddf01668": {
+  "node": "108:840",
+  "crop": false
+ },
+ "7eb5718e3c79406bff992b06b3fe1b8b65571e8a": {
+  "node": "108:861",
+  "crop": false
+ },
+ "c0946ad44a2377f69788e2d8ed687b05851edcaf": {
+  "node": "108:863",
+  "crop": true
+ },
+ "09ea2acf3d766c26f603c1e38c6276ac7947162d": {
+  "node": "108:877",
+  "crop": false
+ },
+ "df2ceeab5ac8edb08913dfe0381c54df9bca3624": {
+  "node": "108:925",
+  "crop": false
+ },
+ "4316d82b56e17eadb2153f3dde1dd0f7050a871b": {
+  "node": "108:936",
+  "crop": false
+ },
+ "b8827f8493d3a49bf54a687fb340c93e45b35c10": {
+  "node": "108:938",
+  "crop": false
+ },
+ "8317763c11b8b97e9ea6ba24e9f49a6fc23f9b4c": {
+  "node": "108:948",
+  "crop": false
+ },
+ "cb976bf716439eef2a07fcd3b6676580d407baa5": {
+  "node": "108:949",
+  "crop": true
+ },
+ "9f4d7db741b8abf5feb8e68ca78d1e2a25a69aad": {
+  "node": "108:951",
+  "crop": false
+ },
+ "d8ec29665b81c210bfa7c919ebf46b9344820e71": {
+  "node": "108:963",
+  "crop": true
+ },
+ "24a18b5480fe93fd78d2941cd4b7d1d84106226a": {
+  "node": "108:973",
+  "crop": false
+ },
+ "cddc2dd738bdcc74299fa2d9d82156bf27b662a8": {
+  "node": "108:974",
+  "crop": false
+ },
+ "dbea5e83800a5caa76cb819ac54c0d31809e9bcb": {
+  "node": "108:976",
+  "crop": false
+ },
+ "d31163c13084ffbbb3d4b6d757b33069a241d423": {
+  "node": "108:996",
+  "crop": false
+ },
+ "c27c0f5c0df840177e0ecae8965366457617c32e": {
+  "node": "108:997",
+  "crop": false
+ },
+ "89d7f1564d0d591c7d0d2ea5629ca35bd4e4fc3e": {
+  "node": "108:998",
+  "crop": false
+ },
+ "31aa89a3dd7a2dde63dd33cd1548a54af7d6b21a": {
+  "node": "108:1000",
+  "crop": false
+ },
+ "7a8f55568bb9499e03f204eb6428bfa4af84a331": {
+  "node": "108:1011",
+  "crop": false
+ },
+ "ce813ada91f7ad3558492f984c48b6aedfd73c95": {
+  "node": "108:1230",
+  "crop": true
+ },
+ "35065ab3ab91b73296f2138fa3dd070e97764fe5": {
+  "node": "108:1231",
+  "crop": true
+ },
+ "3b839f85b96ed86e00a2772870a8fa7373f6a8db": {
+  "node": "108:1245",
+  "crop": false
+ },
+ "30b6c6154df6a6874c3b719f03f3f81d8c699aee": {
+  "node": "108:1246",
+  "crop": false
+ },
+ "2fe70074b6b280cb3bd5c9903c63bb17ed254ff4": {
+  "node": "108:1247",
+  "crop": false
+ },
+ "b8ad341e14d34097b5c0466e4a40239dfe9071f9": {
+  "node": "108:1248",
+  "crop": false
+ },
+ "1d2f3182a538e58af63868a9cf8924e02d5e6738": {
+  "node": "108:1249",
+  "crop": false
+ },
+ "d8677ca0b9e4ddfb84ccb3a76cf081f51f06aca0": {
+  "node": "108:1870",
+  "crop": false
+ },
+ "9a316ef14ce6c8005770c2a9c6c08f2241679aa8": {
+  "node": "108:1871",
+  "crop": false
+ },
+ "0136d16e9863f82ec75c6fd62fb3ad581863dd03": {
+  "node": "108:1872",
+  "crop": false
+ },
+ "6dacae1032d1d239851e0ad8d310ba0e1f0f289f": {
+  "node": "108:1883",
+  "crop": false
+ },
+ "9316267bceb259a77da076af510a278cb4b7e835": {
+  "node": "108:1884",
+  "crop": false
+ },
+ "844bd2fda85eb2d177cd9250c688f78597060b93": {
+  "node": "108:1885",
+  "crop": false
+ },
+ "7c66ddea219007ec6bcaffd4463a6538d8b6aa09": {
+  "node": "108:1887",
+  "crop": true
+ },
+ "347e755489636a7892c321747a875d782160546a": {
+  "node": "108:2135",
+  "crop": false
+ },
+ "4762a58dcb2b73cfe319934d519faee359135f7a": {
+  "node": "108:2212",
+  "crop": true
+ },
+ "87240a4863e5056f91e9c6dd5dc6e1ff8083cd70": {
+  "node": "108:2224",
+  "crop": true
+ },
+ "bd2653169461ff0eabb940467ead712e18f26f5f": {
+  "node": "108:2334",
+  "crop": false
+ },
+ "e174edc0171249be266a3d7377677ba6a78de507": {
+  "node": "108:2335",
+  "crop": false
+ },
+ "44e5ddb44b3d92a7aaa9abd10782a938d4afbff9": {
+  "node": "108:2346",
+  "crop": true
+ },
+ "fc4b4b2f84bb16a7cecd01f7524593b893228e5a": {
+  "node": "108:3101",
+  "crop": true
+ },
+ "81804e89f6666566e7e8fbea6d6c67d136c373df": {
+  "node": "108:3104",
+  "crop": true
+ },
+ "1bc621c249da2f77b1a0c8daee58955dddeacb38": {
+  "node": "108:3116",
+  "crop": false
+ },
+ "eb11cdb31196591b4a8f105d4eddc2d11846bbfd": {
+  "node": "108:3128",
+  "crop": false
+ },
+ "38bbb91c3be6a4f42c5a4b9a79d0f35c26894f2b": {
+  "node": "108:3140",
+  "crop": false
+ },
+ "653f79c8920bd118b664f2ab896f3fa751109be0": {
+  "node": "108:3153",
+  "crop": true
+ },
+ "c2aec9974b35540c52a205b8677d0bb1decfa7e4": {
+  "node": "108:3165",
+  "crop": true
+ },
+ "da2435156f54a537d1ced798e96e85bcb2c36858": {
+  "node": "108:3178",
+  "crop": false
+ },
+ "3a2d0d2ec99e0014ed7147f38a5d509a933bc6bb": {
+  "node": "108:3181",
+  "crop": false
+ },
+ "0f868f9dfd808d2400a57d3b2eb06dc5afbfe4e2": {
+  "node": "108:3194",
+  "crop": false
+ },
+ "4e3d8ce4e3882b8924ec9ee9c362e9e392ef3d2f": {
+  "node": "108:3206",
+  "crop": true
+ },
+ "6091cf9ae843e2f264eb4d9352b13122288dc56b": {
+  "node": "108:3218",
+  "crop": false
+ },
+ "bc90e9b2f95e240f64868b5f24ab549ae827fd16": {
+  "node": "108:3219",
+  "crop": false
+ },
+ "a6750dbde773268ac5e4c49c9f38d50bd69febba": {
+  "node": "108:3220",
+  "crop": false
+ },
+ "f9fe20bc641f37481edea5172ca0a9799846f2fc": {
+  "node": "108:3221",
+  "crop": false
+ },
+ "4550d1b791461e70d4335086724650eb80fd7f2a": {
+  "node": "108:3222",
+  "crop": false
+ },
+ "63e134ec72acdbdab434d144026907f9093b0f2e": {
+  "node": "108:3236",
+  "crop": true
+ },
+ "2158427a788670e1f9ebb934953f8fb66ebabf6e": {
+  "node": "108:3260",
+  "crop": false
+ },
+ "525404db4f845a18a1c142e056a408da99b0090a": {
+  "node": "108:3282",
+  "crop": true
+ },
+ "5c6637021e1eec0b4defa2278159991589c210fc": {
+  "node": "108:3285",
+  "crop": false
+ },
+ "71f6ad4fea9a869c4cfc74656b727f868f3f78af": {
+  "node": "108:3301",
+  "crop": false
+ },
+ "0bca96a0af7cb2db58f183d132603d594ed07388": {
+  "node": "108:3312",
+  "crop": false
+ },
+ "40c4410217fcdd993c80537b825807b6b5a3cc8b": {
+  "node": "108:3322",
+  "crop": false
+ },
+ "b00d1726c382bac3bb60306baa25b877e09b6749": {
+  "node": "108:3333",
+  "crop": false
+ },
+ "f6bce2108c0d0e15582d387e28e6304354e73d95": {
+  "node": "108:3335",
+  "crop": true
+ },
+ "b14b34f4bd70c1e74981cd5602c1f9202a768ce6": {
+  "node": "108:3355",
+  "crop": false
+ },
+ "e65f821ce43198eaadc0346e12551844053ea5b3": {
+  "node": "108:3356",
+  "crop": false
+ },
+ "d7d6e2c83ce7a904352492db9ce579d618cbf4be": {
+  "node": "108:3358",
+  "crop": false
+ },
+ "3fe845bed49a11fae7fa11a65e0a8277fcab80e6": {
+  "node": "108:3369",
+  "crop": false
+ },
+ "98dca0dff58fb5400d9924220489149c204f1b42": {
+  "node": "108:3380",
+  "crop": true
+ },
+ "f4629d9472dc0ed45c65ce74d2178019bb2d20ef": {
+  "node": "108:3400",
+  "crop": false
+ },
+ "6876a3e09c5b34863b200c2e22466d5017cd5c5c": {
+  "node": "108:3405",
+  "crop": true
+ },
+ "757eb01c903b56d038805c31b8d363481b5681ed": {
+  "node": "108:3427",
+  "crop": false
+ },
+ "dba18c14434fde5556810ee6f77744ef5249be76": {
+  "node": "108:3458",
+  "crop": false
+ },
+ "7423dfa70cf46b6ae2b4e5ff6db0420d8eb79907": {
+  "node": "108:3469",
+  "crop": true
+ },
+ "4a6a64ddcb1df64416db183abbf7b777f1acec30": {
+  "node": "108:3470",
+  "crop": true
+ },
+ "0de1c9b21c3f04f4cf8cab6b8f194c4eb669cc9e": {
+  "node": "108:3471",
+  "crop": false
+ },
+ "36fd8acc3462acbfaf4b5af30e0fc875b7d2f500": {
+  "node": "108:3472",
+  "crop": true
+ },
+ "1b8f19b7752868c08b438b62f93828a2e4163302": {
+  "node": "108:3474",
+  "crop": false
+ },
+ "d0959793aea39e21c3401e8be7b81decf42d25d7": {
+  "node": "108:3475",
+  "crop": false
+ },
+ "943d51269fa1c92bdfc46b11fc9fc9cc281eb37f": {
+  "node": "108:3476",
+  "crop": true
+ },
+ "51b9122e6843bd07a074f0d1fb70d501378845a7": {
+  "node": "108:3477",
+  "crop": true
+ },
+ "0000f5a46186b89b9d4f1d366d187757831bdc9a": {
+  "node": "108:3478",
+  "crop": false
+ },
+ "f1b40db5648b2b3572bbfd58bf870d858e470116": {
+  "node": "108:3480",
+  "crop": false
+ },
+ "d956b1610932645a8993cedba3ad9009a2255559": {
+  "node": "108:3491",
+  "crop": false
+ },
+ "34079791441a66771dadb5595b1143099732c197": {
+  "node": "108:3492",
+  "crop": true
+ },
+ "255eafa1f9a8924eee5198f25c7a1eab0fcd931b": {
+  "node": "108:3493",
+  "crop": true
+ },
+ "c1e29d0c11acd4564883b04cae03d0a334f80a20": {
+  "node": "108:3494",
+  "crop": false
+ },
+ "63dd75342a6bf9b1f6421192f79ad27e2d2bbd27": {
+  "node": "108:3495",
+  "crop": false
+ },
+ "1840abdbc464a0c3527a63a5b06ac25b7e413393": {
+  "node": "108:3496",
+  "crop": true
+ },
+ "c88cfac08e1bad6840abc29d58d8163d26d50bcf": {
+  "node": "108:3497",
+  "crop": false
+ },
+ "00b5e85abce4bd6fb7ae3c0b893c9c933542efa7": {
+  "node": "108:3498",
+  "crop": true
+ },
+ "86c28aa8798fd57a18b2c26b59a3e8bd23b4aac2": {
+  "node": "108:3518",
+  "crop": false
+ },
+ "7f25b49824c1eea8db46dff48e804701d8b17643": {
+  "node": "108:3519",
+  "crop": false
+ },
+ "7daa933a2aa0bb3318759ac8dba833ca3d1987d1": {
+  "node": "108:3520",
+  "crop": false
+ },
+ "6aa164d29d7d3822f962d78d1e31e769bf5c5dcb": {
+  "node": "108:3521",
+  "crop": false
+ },
+ "ad7f777f97ca765cdba27092516e04e07ffc938c": {
+  "node": "108:3522",
+  "crop": true
+ },
+ "c18c368364bb5d59ad29d00b7af777256b8b3653": {
+  "node": "108:3523",
+  "crop": false
+ },
+ "adeca06f3d40229151321337d71fa93e6733c235": {
+  "node": "108:3524",
+  "crop": false
+ },
+ "727be571e666c2d24128a353da5ddc218e3b79bd": {
+  "node": "108:3525",
+  "crop": false
+ },
+ "bd8d125744377315744c666897d3528e02da64f1": {
+  "node": "108:3527",
+  "crop": false
+ },
+ "2e7587251369eda4d7bf7524915c0b2867b05d78": {
+  "node": "108:3538",
+  "crop": false
+ },
+ "59b247bcb2481753fa8aa2ecfdaf893c4c309a95": {
+  "node": "108:3551",
+  "crop": false
+ },
+ "2c16a9fe253d57625ee506ec5e30253e61cb58b2": {
+  "node": "108:3572",
+  "crop": false
+ },
+ "1ef46de28682d40aef97c1a2c62d241a72c8732e": {
+  "node": "108:3583",
+  "crop": false
+ },
+ "ca02d38aa53dcd05c3a5c1397d3ccf08e2c14d05": {
+  "node": "108:3594",
+  "crop": false
+ },
+ "775cde537aa73867ee4afd3d3e3133146a1c7136": {
+  "node": "108:3605",
+  "crop": true
+ },
+ "94424a3468fcc04741ba1115c37a262e3b8b206f": {
+  "node": "108:3616",
+  "crop": false
+ },
+ "d7d77b8ae9d11797a09b10d7d073aa97533895a6": {
+  "node": "108:3628",
+  "crop": false
+ },
+ "8f3bf2830bc59842bb16793606fc26827754af13": {
+  "node": "108:3639",
+  "crop": false
+ },
+ "5d504232556e48db4fe7088667c1d5be9e87ebdd": {
+  "node": "108:3668",
+  "crop": false
+ },
+ "50dc771dbb051a42b94eacfcd188a7b35493e117": {
+  "node": "108:3669",
+  "crop": true
+ },
+ "663866fd17f3c6f9ffae6a256af8969041078398": {
+  "node": "108:3726",
+  "crop": false
+ },
+ "04f286ba5dbf710e1747b4e2863d13d5d57bd067": {
+  "node": "108:3737",
+  "crop": false
+ },
+ "4a698cbe159a771ab29033f91224e22d307318b7": {
+  "node": "108:3738",
+  "crop": false
+ },
+ "c908bc32542cdd5f7f95644cdb874b66ac10ccbe": {
+  "node": "108:3739",
+  "crop": false
+ },
+ "b30bfb10b901990e4a83027c34bde9d705c3e4c4": {
+  "node": "108:3873",
+  "crop": false
+ },
+ "899bed31f7bf09e072a02bc213fd5c256c6d786b": {
+  "node": "108:3887",
+  "crop": false
+ },
+ "354c973e5198adfe37aa77f9616969377ffc0d48": {
+  "node": "108:3888",
+  "crop": true
+ },
+ "61baccea036edd6c5039d5cee4d26490f4231e54": {
+  "node": "108:3890",
+  "crop": true
+ },
+ "6cef64083bd6447fe395bc17e6ca1b4486f60f3d": {
+  "node": "108:3893",
+  "crop": true
+ },
+ "051a0c3fab81925b938ed960e2ef1edfa2138b56": {
+  "node": "108:3898",
+  "crop": true
+ },
+ "17f163ba1eb0d78a285e745f84d4a26e7ee40755": {
+  "node": "108:4000",
+  "crop": false
+ },
+ "aba4b7f5573a9f6e1ee181af88ad61d31a872570": {
+  "node": "108:4031",
+  "crop": true
+ },
+ "cf109db50f3443aa540937e0890df0cf5fec2531": {
+  "node": "108:4034",
+  "crop": false
+ },
+ "eb2847b65a6373b86b44de64f257fbeec909f5a3": {
+  "node": "108:4072",
+  "crop": false
+ },
+ "99f48fbeaa28bcfc4929c6b0b0ba37921a40e71c": {
+  "node": "108:4073",
+  "crop": false
+ },
+ "359e50073ec82ce7314296ddc85392dab520ef9b": {
+  "node": "108:4074",
+  "crop": false
+ },
+ "5539ac1ca27917629ff6d5ab71b4cbc340c5110a": {
+  "node": "108:4075",
+  "crop": true
+ }
+}
