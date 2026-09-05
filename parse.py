@@ -1,18 +1,9 @@
 #!/usr/bin/env python3
 """Parse the Figma text dump into an absolutely-positioned node tree."""
-import re, json, sys, yaml
+import re, json, sys
+import figma_dump
 
-DUMP = "figma-dump.txt"
-lines = open(DUMP, encoding="utf-8").read().split("\n")
-
-# section boundaries (1-based in file): GLOBAL_VARS:3, ELEMENTS:641, NODES:2274
-def section(a, b):
-    return "\n".join(lines[a:b])
-
-gvars = yaml.safe_load(section(3, 640))       # after 'GLOBAL_VARS:'
-elements = yaml.safe_load(section(641, 2273))  # after 'ELEMENTS:'
-
-node_lines = lines[2273:]  # from 'NODES:' line onward (index 2273 == line 2274)
+gvars, elements, node_lines = figma_dump.load()
 
 # ---------- attribute parser for a node line ----------
 attr_re = re.compile(r'(\w+)=')

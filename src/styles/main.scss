@@ -47,6 +47,78 @@ img { display: block; max-width: none; }
   padding: 0;
 }
 
+// Image fills. These were CSS background-images, which have no lazy-loading
+// primitive; as real <img loading="lazy"> the browser skips everything far
+// from the viewport. object-fit:cover reproduces background-size:cover +
+// background-position:center exactly. The parent .n carries overflow:hidden.
+.fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+// ============================================================
+// Draggable artifact cards ("Click and drag to rearrange artifacts").
+// drag.js writes the offset to the `translate` property, which composes
+// with any existing `transform` instead of overwriting it. `scale` is an
+// independent property too, so the lift stacks without conflict.
+// Only scale and filter transition — never translate, or the card would
+// lag behind the cursor.
+// ============================================================
+[data-artifact] {
+  cursor: grab;
+  transition: scale 0.18s ease, filter 0.18s ease;
+
+  &.dragging {
+    cursor: grabbing;
+    scale: 1.04;
+    filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.22));
+    will-change: translate;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-artifact] { transition: none; }
+}
+
+// Two image tiers for the explore canvas. Only one is ever displayed, and
+// lazy loading skips display:none images, so the tier you are not looking
+// at is never downloaded.
+.lod-thumb { display: none; }
+
+.canvas.lod {
+  .lod-full  { display: none; }
+  .lod-thumb { display: block; }
+}
+
+// ============================================================
+// Mobile explore canvas. The page itself stops scrolling — the stage is a
+// fixed window and viewport.js moves the canvas behind it.
+// ============================================================
+body.explore {
+  overflow: hidden;
+  overscroll-behavior: none;
+
+  .stage {
+    position: fixed;
+    inset: 0;
+    height: 100%;
+    overflow: hidden;
+    touch-action: none;      // every gesture is handled in viewport.js
+    cursor: grab;
+
+    &:active { cursor: grabbing; }
+  }
+
+  // Text hitboxes in the Figma export are tall and overlap their
+  // neighbours; letting them swallow drags would make panning feel broken.
+  .n { user-select: none; }
+
+  img { pointer-events: none; }
+}
+
 // Fade-in-up reveal for top-level boxes as they scroll into view.
 // The transform is composed in JS (see main.js) so it stacks with
 // any existing inline transform (e.g. rotated boxes).

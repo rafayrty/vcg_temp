@@ -6,7 +6,8 @@
   "scripts": {
     "start": "parcel",
     "build": "parcel build --public-url ./",
-    "clean": "rm -rf dist .parcel-cache"
+    "clean": "rm -rf dist .parcel-cache",
+    "generate": "python3 parse.py && python3 render.py && python3 optimize_assets.py"
   },
   "browserslist": "last 2 Chrome versions, last 2 Firefox versions, last 2 Safari versions",
   "devDependencies": {

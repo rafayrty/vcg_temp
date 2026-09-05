@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 """Render the resolved Figma tree into absolutely-positioned HTML."""
 import json, re, html
+import figma_dump
 
 data = json.load(open("tree.json"))
 desktop = data["tree"]
-gvars = None
-import yaml
-lines = open("figma-dump.txt", encoding="utf-8").read().split("\n")
-gvars = yaml.safe_load("\n".join(lines[3:640]))
-elements = yaml.safe_load("\n".join(lines[641:2273]))
+gvars, elements, _ = figma_dump.load()
 ext_map = json.load(open("ext_map.json"))
 # Figma vector (IMAGE-SVG) nodes exported to SVG, keyed by node id.
 SVG_MAP = {
@@ -24,7 +21,9 @@ VIDEO_MAP = {
     "108:4014": "APPLE_SIRI.mp4",
 }
 def img_path(ref):
-    return f"assets/images/img_{ref[:12]}.{ext_map.get(ref[:12],'png')}"
+    # Sources are the originals in assets_src/; the site ships WebP built from
+    # them by optimize_assets.py. ext_map still maps ref -> source extension.
+    return f"assets/images/img_{ref[:12]}.webp"
 
 minx, miny, maxx, maxy = data["bbox"]
 # The Figma DESKTOP frame is 1280px wide (content is centered within it:
@@ -36,7 +35,31 @@ OFFY = 0
 W = FRAME_W
 H = maxy           # full scroll height of the frame
 
-img_manifest = {}  # ref -> {node, crop}
+img_manifest = {}  # ref -> {node, crop, w, h}
+
+
+def image_tag(ref, node, w, h, crop):
+    """Record the image at its largest on-screen size and return an <img>.
+
+    The same imageRef can be placed at several sizes; optimize_assets.py sizes
+    each output from the largest, so no instance is ever upscaled.
+    """
+    e = img_manifest.setdefault(
+        ref, {"node": node["id"], "crop": crop, "w": 0, "h": 0}
+    )
+    e["w"] = max(e["w"], round(w or 0))
+    e["h"] = max(e["h"], round(h or 0))
+    e["crop"] = e["crop"] or crop
+    # Two tiers. The thumb is display:none until the mobile canvas zooms out
+    # past viewport.js's LOD threshold, and lazy loading skips hidden images,
+    # so neither tier costs anything until it is actually shown. Both go
+    # through src= so Parcel rewrites them to hashed filenames on build.
+    full = img_path(ref)
+    thumb = full.replace("/img_", "/thumb_")
+    return (f'<img class="fill lod-full" loading="lazy" decoding="async" '
+            f'src="{full}" alt="">'
+            f'<img class="fill lod-thumb" loading="lazy" decoding="async" '
+            f'src="{thumb}" alt="">')
 
 def as_list(v):
     return v if isinstance(v, list) else [v]
@@ -133,7 +156,19 @@ def effects_shadow(node):
 
 out = []
 
-def emit(node, pax, pay):
+# The artifact cards are a uniform 414x414 in the Figma frame. Those are the
+# boxes the design invites you to rearrange ("Click and drag to rearrange
+# artifacts"), so only they get data-artifact — not the nav, rules or hero.
+ARTIFACT_SIZE = 414
+ARTIFACT_TOL = 2
+
+
+def is_artifact(w, h):
+    return (abs(w - ARTIFACT_SIZE) <= ARTIFACT_TOL
+            and abs(h - ARTIFACT_SIZE) <= ARTIFACT_TOL)
+
+
+def emit(node, pax, pay, top=False):
     """pax,pay = parent's absolute origin. Children are nested in the DOM,
     so each node is positioned RELATIVE to its parent (its real
     locationRelativeToParent), which keeps overflow:hidden clipping correct."""
@@ -151,9 +186,10 @@ def emit(node, pax, pay):
     vid = VIDEO_MAP.get(node["id"])
     if vid:
         vstyle = list(style) + ["object-fit:cover"]
+        # preload="none" means no bytes until main.js play()s it on scroll-in.
         out.append(
             f'<video class="n" style="{";".join(vstyle)}" '
-            f'autoplay muted loop playsinline preload="auto">'
+            f'muted loop playsinline preload="none">'
             f'<source src="assets/videos/{vid}" type="video/mp4"></video>'
         )
         return
@@ -173,21 +209,16 @@ def emit(node, pax, pay):
         if fi and fi[0] == "solid":
             style.append(f"background:{fi[1]}")
         elif fi and fi[0] == "image":
-            ref = fi[1]
-            img_manifest.setdefault(ref, {"node": node["id"], "crop": fi[2]})
-            style.append(f"background-image:url({img_path(ref)})")
-            style.append("background-size:cover")
-            style.append("background-position:center")
+            inner = image_tag(fi[1], node, w, h, fi[2])
+            if typ == "GROUP":
+                style.append("overflow:hidden")
     elif typ == "RECTANGLE":
         br = node["attrs"].get("borderRadius")
         if br:
             style.append(f"border-radius:{br}")
         if fi and fi[0] == "image":
-            ref = fi[1]
-            img_manifest.setdefault(ref, {"node": node["id"], "crop": fi[2]})
-            style.append(f"background-image:url({img_path(ref)})")
-            style.append("background-size:cover")
-            style.append("background-position:center")
+            inner = image_tag(fi[1], node, w, h, fi[2])
+            style.append("overflow:hidden")
         elif fi and fi[0] == "solid":
             style.append(f"background:{fi[1]}")
         else:
@@ -197,10 +228,8 @@ def emit(node, pax, pay):
         if fi and fi[0] == "solid":
             style.append(f"background:{fi[1]}")
         elif fi and fi[0] == "image":
-            ref = fi[1]
-            img_manifest.setdefault(ref, {"node": node["id"], "crop": fi[2]})
-            style.append(f"background-image:url({img_path(ref)})")
-            style.append("background-size:cover")
+            inner = image_tag(fi[1], node, w, h, fi[2])
+            style.append("overflow:hidden")
     elif typ == "LINE":
         col = resolve_strokes(node) or "#000000"
         sw = stroke_weight(node)
@@ -262,13 +291,14 @@ def emit(node, pax, pay):
     else:
         style.append("background:transparent")
 
-    out.append(f'<div class="{cls}" style="{";".join(style)}">{inner}')
+    attr = ' data-artifact' if top and is_artifact(w or 0, h or 0) else ''
+    out.append(f'<div class="{cls}"{attr} style="{";".join(style)}">{inner}')
     for c in node["children"]:
         emit(c, ax, ay)
     out.append("</div>")
 
 for c in desktop["children"]:
-    emit(c, -OFFX, -OFFY)
+    emit(c, -OFFX, -OFFY, top=True)
 
 body = "\n".join(out)
 

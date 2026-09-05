@@ -1,70 +1,118 @@
 // ============================================================
-// VCG — responsive canvas scaling
-// The design is an exact 1:1 reproduction of the Figma "DESKTOP"
-// frame (1280px wide) using absolute positioning. To stay
-// responsive without a horizontal scrollbar we scale the whole
-// frame to the viewport width and center it:
-//   - viewport < 1280 : scale down to fit width (boxes shrink)
-//   - viewport >= 1280: native size (scale 1), centered with margins
-// The stage height tracks the scaled frame so vertical scrolling
-// stays accurate.
+// VCG — entry point
+//
+// Two experiences over one canvas:
+//   desktop (>900px) — the authored top-to-bottom scroll, unchanged:
+//                      the 1280px frame scaled to fit the viewport width.
+//   mobile  (<=900px) — a pan/zoom explore canvas (see viewport.js). The
+//                      same frame at 0.29 scale is unreadable on a phone,
+//                      so it becomes something you move around instead.
 // ============================================================
+
+import { initViewport } from './viewport.js';
+import { initDrag } from './drag.js';
 
 const canvas = document.getElementById('canvas');
 const stage = document.getElementById('stage');
 
-const DESIGN_W = parseFloat(canvas.dataset.w);
-const DESIGN_H = parseFloat(canvas.dataset.h);
+// Desktop scale comes from fit(); mobile's from the viewport. drag.js needs
+// whichever is live to convert cursor travel into design pixels.
+let scale = 1;
 
-function fit() {
-  const available = stage.clientWidth;
-  const scale = Math.min(1, available / DESIGN_W);
-  const scaledW = DESIGN_W * scale;
-  canvas.style.transform = `scale(${scale})`;
-  canvas.style.left = `${Math.max(0, (available - scaledW) / 2)}px`;
-  stage.style.height = `${DESIGN_H * scale}px`;
+// ponytail: decided once at load. Dragging a desktop window across the
+// breakpoint keeps the mode it started in; a reload switches. Not worth
+// tearing down and rebuilding either mode to handle a rare resize.
+const isMobile = window.matchMedia('(max-width: 900px)').matches;
+
+if (isMobile) {
+  document.body.classList.add('explore');
+  const vp = initViewport(canvas, stage);
+  const drag = initDrag(canvas, {
+    getScale: vp.getScale,
+    holdToDrag: true,       // press and hold to lift, so a swipe still pans
+    onMove: vp.notifyMoved,
+  });
+  vp.setDragPredicate(drag.isActive);
+} else {
+  initScrollMode();
+  initDrag(canvas, { getScale: () => scale });
 }
 
-fit();
-window.addEventListener('resize', fit);
-window.addEventListener('load', fit);
-
 // ============================================================
-// Fade-in-up on scroll for the top-level boxes.
-// We only reveal the canvas's direct children (the artifact
-// boxes) so nested content fades in as a group and performance
-// stays smooth. IntersectionObserver works against the real
-// viewport, so the scaled/transformed canvas is handled fine.
+// Desktop: scale the fixed-width canvas to the viewport and track the
+// stage height so vertical scrolling stays accurate.
 // ============================================================
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function initScrollMode() {
+  const DESIGN_W = parseFloat(canvas.dataset.w);
+  const DESIGN_H = parseFloat(canvas.dataset.h);
 
-if (!reduceMotion) {
-  // The footer (black panel, dividers, contact text) sits at the very
-  // bottom of the frame; it should not fade in on scroll.
-  const FOOTER_Y = 53000;
+  function fit() {
+    const available = stage.clientWidth;
+    scale = Math.min(1, available / DESIGN_W);
+    canvas.style.transform = `scale(${scale})`;
+    canvas.style.left = `${Math.max(0, (available - DESIGN_W * scale) / 2)}px`;
+    stage.style.height = `${DESIGN_H * scale}px`;
+  }
+
+  fit();
+  window.addEventListener('resize', fit);
+  window.addEventListener('load', fit);
+
+  // Fade-in-up as boxes scroll into view. Only the canvas's direct children
+  // are observed, so nested content reveals as a group.
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  // The footer sits at the very bottom of the frame and should not fade in.
+  const FOOTER_Y = DESIGN_H - 1300;
   const boxes = [...canvas.querySelectorAll(':scope > .n')].filter(
-    (b) => parseFloat(b.style.top || '0') < FOOTER_Y
+    (b) => parseFloat(b.style.top || '0') < FOOTER_Y,
   );
 
   // Compose the reveal offset with any existing inline transform so
   // rotated/translated boxes animate correctly.
   boxes.forEach((b) => {
-    const base = b.style.transform ? b.style.transform + ' ' : '';
+    const base = b.style.transform ? `${b.style.transform} ` : '';
     b.dataset.baseTransform = base;
-    b.style.transform = base + 'translateY(40px)';
+    b.style.transform = `${base}translateY(40px)`;
     b.classList.add('reveal');
   });
 
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
         const b = entry.target;
         b.style.transform = b.dataset.baseTransform;
         b.classList.add('in');
         io.unobserve(b);
-      }
-    });
-  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+      });
+    },
+    { rootMargin: '0px 0px -8% 0px', threshold: 0.05 },
+  );
 
   boxes.forEach((b) => io.observe(b));
+}
+
+// ============================================================
+// Videos ship with preload="none" so they cost nothing until needed.
+// play() is what triggers the download, so nothing is fetched until a
+// video is nearly on screen; pausing off-screen keeps decoding cheap.
+// ============================================================
+const videos = document.querySelectorAll('video');
+
+if (videos.length) {
+  const vio = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(({ target, isIntersecting }) => {
+        if (isIntersecting) {
+          // Rejects if the browser blocks autoplay; nothing to recover.
+          target.play().catch(() => {});
+        } else {
+          target.pause();
+        }
+      });
+    },
+    { rootMargin: '200px 0px' },
+  );
+  videos.forEach((v) => vio.observe(v));
 }
