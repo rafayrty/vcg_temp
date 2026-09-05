@@ -136,7 +136,18 @@ body.explore {
     touch-action: none;      // every gesture is handled in viewport.js
     cursor: grab;
 
+    // The surface the canvas sits on. Only visible where the canvas is not
+    // — pulling past an edge, or zoomed out to the map — which is exactly
+    // when it helps: it says "this is a board", without touching the
+    // artwork. Delete this block to go back to plain white.
+    background-color: #f4f4f2;
+    background-image: radial-gradient(rgba(0, 0, 0, 0.13) 1px, transparent 1px);
+    background-size: 22px 22px;
+
     &:active { cursor: grabbing; }
+
+    // Zoomed out past fit-width nothing is legible, so a tap flies you in.
+    &.map [data-artifact] { cursor: zoom-in; }
   }
 
   [data-artifact] { touch-action: none; }
