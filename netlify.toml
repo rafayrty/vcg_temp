@@ -1,0 +1,47 @@
+# Netlify build config.
+#
+# Only the JS/CSS bundling runs here. The Python pipeline (parse.py ->
+# render.py -> optimize_assets.py) is run locally and its output —
+# src/index.html and the WebP/MP4 assets — is committed, so CI needs
+# nothing but Node.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Parcel content-hashes every asset filename, so a changed file always gets
+# a new URL and these can be cached indefinitely.
+[[headers]]
+  for = "/*.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.mp4"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# The entry document is not hashed — it must be revalidated so a new deploy
+# is picked up rather than served from cache.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
