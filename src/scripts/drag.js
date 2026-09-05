@@ -144,6 +144,10 @@ export function initDrag(canvas, { getScale, holdToDrag = false, onMove } = {}) 
     }
   }
 
+  // Native HTML5 drag-and-drop would otherwise start on images and text and
+  // trail a ghost across the page while our own drag runs.
+  canvas.addEventListener('dragstart', (e) => e.preventDefault());
+
   // Listen on the window so a fast drag that outruns the pointer still ends
   // cleanly when the button comes up outside the canvas.
   window.addEventListener('pointermove', move, { passive: false });

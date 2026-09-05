@@ -56,10 +56,13 @@ def image_tag(ref, node, w, h, crop):
     # through src= so Parcel rewrites them to hashed filenames on build.
     full = img_path(ref)
     thumb = full.replace("/img_", "/thumb_")
-    return (f'<img class="fill lod-full" loading="lazy" decoding="async" '
-            f'src="{full}" alt="">'
-            f'<img class="fill lod-thumb" loading="lazy" decoding="async" '
-            f'src="{thumb}" alt="">')
+    # draggable="false" stops the browser's own image drag-and-drop, which
+    # otherwise fires alongside ours and leaves a ghost image trailing the
+    # cursor.
+    return (f'<img class="fill lod-full" draggable="false" loading="lazy" '
+            f'decoding="async" src="{full}" alt="">'
+            f'<img class="fill lod-thumb" draggable="false" loading="lazy" '
+            f'decoding="async" src="{thumb}" alt="">')
 
 def as_list(v):
     return v if isinstance(v, list) else [v]
@@ -156,19 +159,69 @@ def effects_shadow(node):
 
 out = []
 
-# The artifact cards are a uniform 414x414 in the Figma frame. Those are the
-# boxes the design invites you to rearrange ("Click and drag to rearrange
-# artifacts"), so only they get data-artifact — not the nav, rules or hero.
-ARTIFACT_SIZE = 414
-ARTIFACT_TOL = 2
+# Every top-level card is draggable ("Click and drag to rearrange
+# artifacts"). Cards are the boxed content — frames, groups and images at
+# least MIN_CARD across. Bare TEXT runs (the nav, the founder bio) and the
+# hairline rules are page furniture and stay put.
+MIN_CARD = 120
+CARD_TYPES = ("FRAME", "GROUP", "RECTANGLE")
 
 
-def is_artifact(w, h):
-    return (abs(w - ARTIFACT_SIZE) <= ARTIFACT_TOL
-            and abs(h - ARTIFACT_SIZE) <= ARTIFACT_TOL)
+def is_card(typ, w, h):
+    return typ in CARD_TYPES and (w or 0) >= MIN_CARD and (h or 0) >= MIN_CARD
 
 
-def emit(node, pax, pay, top=False):
+# ---- folders -------------------------------------------------------------
+# Each artifact captions itself with its brand ("< aPPLE_", "< NASA"), so the
+# grouping is already in the file — no hand-maintained map. Within a brand the
+# topmost card becomes the folder cover; the rest hide and show under it.
+BRAND_ALIASES = {
+    "PLEMTY": "PLENTY",          # typo in the Figma text
+    "THE": "PEARL",              # "< THE_PEARL"
+    "ANALOUGE": "ANALOGUE_ARTISTS",
+}
+BRANDS = {"APPLE", "HEADSPACE", "NASA", "PLENTY", "PEARL",
+          "ONE", "AUGUR", "ANALOGUE_ARTISTS", "XYZ"}
+
+
+def subtree_texts(node, acc):
+    t = resolve_text(node)
+    if isinstance(t, str):
+        acc.append(unescape(t).strip())
+    for c in node["children"]:
+        subtree_texts(c, acc)
+    return acc
+
+
+def brand_of(node):
+    """First self-caption in the card, normalised to a brand name."""
+    for s in subtree_texts(node, []):
+        if not s.startswith("<"):
+            continue
+        tok = re.split(r"[_\s./]+", s[1:].strip().replace("\\", ""))[0].upper()
+        tok = BRAND_ALIASES.get(tok, tok)
+        if tok in BRANDS:
+            return tok
+    return None
+
+
+# node id -> brand, and the one cover card per brand
+node_brand = {}
+for c in desktop["children"]:
+    b = brand_of(c)
+    if b:
+        node_brand[c["id"]] = b
+
+covers = {}
+for c in desktop["children"]:
+    b = node_brand.get(c["id"])
+    if b and (b not in covers or c["abs"][1] < covers[b]["abs"][1]):
+        covers[b] = c
+cover_ids = {c["id"]: b for b, c in covers.items()}
+
+
+def emit(node, pax, pay, is_top=False):
+    # NB: `top` below is the CSS offset, not a flag — hence `is_top`.
     """pax,pay = parent's absolute origin. Children are nested in the DOM,
     so each node is positioned RELATIVE to its parent (its real
     locationRelativeToParent), which keeps overflow:hidden clipping correct."""
@@ -291,14 +344,22 @@ def emit(node, pax, pay, top=False):
     else:
         style.append("background:transparent")
 
-    attr = ' data-artifact' if top and is_artifact(w or 0, h or 0) else ''
+    attr = ""
+    if is_top:
+        if is_card(typ, w, h):
+            attr += " data-artifact"
+        brand = node_brand.get(node["id"])
+        if brand:
+            attr += f' data-brand="{brand}"'
+            if node["id"] in cover_ids:
+                attr += " data-folder"
     out.append(f'<div class="{cls}"{attr} style="{";".join(style)}">{inner}')
     for c in node["children"]:
         emit(c, ax, ay)
     out.append("</div>")
 
 for c in desktop["children"]:
-    emit(c, -OFFX, -OFFY, top=True)
+    emit(c, -OFFX, -OFFY, is_top=True)
 
 body = "\n".join(out)
 

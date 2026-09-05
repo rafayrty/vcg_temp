@@ -67,6 +67,20 @@ img { display: block; max-width: none; }
 // Only scale and filter transition — never translate, or the card would
 // lag behind the cursor.
 // ============================================================
+// The canvas is a dragging surface, not a document: text selection and the
+// browser's native image drag both fire alongside our own drag and leave
+// selection highlights and ghost images behind. Kill both at the source.
+.canvas {
+  user-select: none;
+  -webkit-user-select: none;
+
+  img {
+    -webkit-user-drag: none;
+    user-drag: none;
+    pointer-events: none;   // clicks resolve to the card, not the image
+  }
+}
+
 [data-artifact] {
   cursor: grab;
   transition: scale 0.18s ease, filter 0.18s ease;
@@ -78,6 +92,19 @@ img { display: block; max-width: none; }
     will-change: translate;
   }
 }
+
+// Folder covers are interactive; the cards they hold are simply removed
+// from the paint, keeping their absolute positions for when they return.
+[data-folder] {
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid #000;
+    outline-offset: 3px;
+  }
+}
+
+.folded { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
   [data-artifact] { transition: none; }
@@ -112,11 +139,7 @@ body.explore {
     &:active { cursor: grabbing; }
   }
 
-  // Text hitboxes in the Figma export are tall and overlap their
-  // neighbours; letting them swallow drags would make panning feel broken.
-  .n { user-select: none; }
-
-  img { pointer-events: none; }
+  [data-artifact] { touch-action: none; }
 }
 
 // Fade-in-up reveal for top-level boxes as they scroll into view.

@@ -192,6 +192,8 @@ export function initViewport(canvas, stage) {
     pts.delete(e.pointerId);
     if (pts.size < 2) pinch = null;
     if (!wasLast || travel > TAP_SLOP || dragging()) return;
+    // A tap meant for a folder cover is not a zoom gesture.
+    if (e.target.closest?.('[data-folder]')) return;
 
     // Double tap toggles between the full-width view and a readable one,
     // anchored where you tapped. The single most useful gesture on a phone.
@@ -254,6 +256,7 @@ export function initViewport(canvas, stage) {
       b.oy = dy;
       schedule();
     },
+    refresh: schedule,
     reset: home,
   };
 }

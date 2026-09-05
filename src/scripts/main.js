@@ -11,6 +11,7 @@
 
 import { initViewport } from './viewport.js';
 import { initDrag } from './drag.js';
+import { initFolders } from './folders.js';
 
 const canvas = document.getElementById('canvas');
 const stage = document.getElementById('stage');
@@ -33,9 +34,13 @@ if (isMobile) {
     onMove: vp.notifyMoved,
   });
   vp.setDragPredicate(drag.isActive);
+  // Opening or closing a folder changes what is on screen, so the cull has
+  // to run again.
+  initFolders(canvas, { onToggle: vp.refresh });
 } else {
   initScrollMode();
   initDrag(canvas, { getScale: () => scale });
+  initFolders(canvas);
 }
 
 // ============================================================
