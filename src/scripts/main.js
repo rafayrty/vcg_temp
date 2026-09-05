@@ -34,13 +34,14 @@ if (isMobile) {
     onMove: vp.notifyMoved,
   });
   vp.setDragPredicate(drag.isActive);
-  // Opening or closing a folder changes what is on screen, so the cull has
-  // to run again.
-  initFolders(canvas, { onToggle: vp.refresh });
+  // Folders are a mobile affordance only. Folding moves every card, so the
+  // viewport has to re-read the layout before culling against it.
+  initFolders(canvas, { reflow: true, onToggle: vp.syncLayout });
 } else {
+  // Desktop keeps the authored page exactly as composed — no folding. It is
+  // one long designed scroll and hiding sections would gut it.
   initScrollMode();
   initDrag(canvas, { getScale: () => scale });
-  initFolders(canvas);
 }
 
 // ============================================================

@@ -5,15 +5,66 @@
 // without a hand-maintained map: every card carries data-brand, and the
 // topmost card of each brand carries data-folder and acts as the cover.
 //
-// Tapping a cover shows or hides the rest of that brand. Plain display
-// toggling — the cards keep their Figma coordinates, nothing reflows.
+// Tapping a cover shows or hides the rest of that brand, and the page
+// closes up behind it. Hiding alone is not enough: the cards are absolutely
+// positioned across 54257px, so simply removing them leaves the hole they
+// were sitting in — 84% of the page went blank when folders shipped without
+// this. So after each toggle every card is shifted up past whatever is now
+// empty, and the canvas reports its new height.
+//
+// Only space that *became* empty is reclaimed. The bands occupied with
+// everything open are measured once at startup, and only regions inside
+// those bands can be removed — so the deliberate whitespace between
+// sections in the Figma layout is never touched.
 // ============================================================
 
-// Folders start closed, so the canvas opens as a set of brand covers and
-// fills in as you open them. Flip to false to have everything visible.
-const START_CLOSED = true;
+// Folders start open, so the site loads as the composition Figma lays out —
+// closing is something the visitor chooses. Starting closed reads as a
+// mostly-empty page, because the covers alone cannot carry 54000px.
+const START_CLOSED = false;
+// Breathing room left behind at each fold. Applied per emptied band and
+// there are dozens of them, so keep it small — at 240 the leftovers added
+// back over 10000px and the collapsed page still looked hollow.
+const KEEP_GAP = 90;
 
-export function initFolders(canvas, { onToggle } = {}) {
+/** Merge [start,end] pairs into sorted, non-overlapping bands. */
+function merge(spans) {
+  const s = spans.filter(([a, b]) => b > a).sort((p, q) => p[0] - q[0]);
+  const out = [];
+  for (const [a, b] of s) {
+    const last = out[out.length - 1];
+    if (last && a <= last[1]) last[1] = Math.max(last[1], b);
+    else out.push([a, b]);
+  }
+  return out;
+}
+
+/** Bands in `a` not covered by `b`; both must already be merged. */
+function subtract(a, b) {
+  const out = [];
+  for (let [s, e] of a) {
+    for (const [bs, be] of b) {
+      if (be <= s || bs >= e) continue;
+      if (bs > s) out.push([s, Math.min(bs, e)]);
+      s = Math.max(s, be);
+      if (s >= e) break;
+    }
+    if (s < e) out.push([s, e]);
+  }
+  return out;
+}
+
+/** Total length of `bands` lying above y. */
+function above(bands, y) {
+  let total = 0;
+  for (const [s, e] of bands) {
+    if (s >= y) break;
+    total += Math.min(e, y) - s;
+  }
+  return total;
+}
+
+export function initFolders(canvas, { onToggle, reflow = false } = {}) {
   const members = new Map();   // brand -> cards that hide/show
   const covers = new Map();    // brand -> the cover card
 
@@ -29,7 +80,39 @@ export function initFolders(canvas, { onToggle } = {}) {
 
   const open = new Set();
 
-  function setOpen(brand, isOpen) {
+  // Every top-level node, with the y it sits at in the Figma layout. All
+  // shifting is computed from these, never from the current position, so
+  // repeated toggles cannot drift.
+  const all = [...canvas.querySelectorAll(':scope > .n, :scope > video')].map((el) => {
+    const top = parseFloat(el.style.top) || 0;
+    const h = parseFloat(el.style.height) || 0;
+    el.dataset.baseTop = String(top);
+    return { el, top, bottom: top + h };
+  });
+  const baseline = merge(all.map((b) => [b.top, b.bottom]));
+
+  function applyReflow() {
+    const live = merge(
+      all.filter((b) => !b.el.classList.contains('folded'))
+        .map((b) => [b.top, b.bottom]),
+    );
+    // Emptied bands, each shrunk by KEEP_GAP so folds do not butt together.
+    const emptied = subtract(baseline, live)
+      .map(([s, e]) => [s, Math.max(s, e - KEEP_GAP)])
+      .filter(([s, e]) => e > s);
+
+    let height = 0;
+    for (const b of all) {
+      const shift = above(emptied, b.top);
+      b.el.style.top = `${b.top - shift}px`;
+      if (!b.el.classList.contains('folded')) {
+        height = Math.max(height, b.bottom - shift);
+      }
+    }
+    canvas.style.height = `${Math.ceil(height)}px`;
+  }
+
+  function setOpen(brand, isOpen, quiet = false) {
     const cards = members.get(brand);
     if (!cards) return;
     for (const el of cards) el.classList.toggle('folded', !isOpen);
@@ -39,6 +122,8 @@ export function initFolders(canvas, { onToggle } = {}) {
       cover.classList.toggle('open', isOpen);
       cover.setAttribute('aria-expanded', String(isOpen));
     }
+    if (quiet) return;
+    if (reflow) applyReflow();
     if (onToggle) onToggle();
   }
 
@@ -50,8 +135,10 @@ export function initFolders(canvas, { onToggle } = {}) {
       'aria-label',
       `${brand.replace(/_/g, ' ')} — ${members.get(brand)?.length || 0} artifacts`,
     );
-    setOpen(brand, !START_CLOSED);
+    setOpen(brand, !START_CLOSED, true);   // quiet: reflow once, below
   }
+  if (reflow) applyReflow();
+  if (onToggle) onToggle();
 
   canvas.addEventListener('click', (e) => {
     const cover = e.target.closest('[data-folder]');

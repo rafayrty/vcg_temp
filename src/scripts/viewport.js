@@ -42,6 +42,9 @@ export function initViewport(canvas, stage) {
   // exists, since the two need each other's state.
   let dragging = () => false;
 
+  // Live content height. Folding cards away shortens the canvas, and the
+  // zoomed-out floor has to follow or the map keeps framing dead space.
+  let contentH = DESIGN_H;
   let fitK = 1;    // whole 1280 width visible — the composition as designed
   let minK = 0.01; // whole canvas visible — the zoomed-out map of the site
   let k = 1;
@@ -57,7 +60,7 @@ export function initViewport(canvas, stage) {
     const vw = stage.clientWidth;
     const vh = stage.clientHeight;
     const cw = DESIGN_W * k;
-    const ch = DESIGN_H * k;
+    const ch = contentH * k;
     const padX = vw * OVERPAN;
     const padY = vh * OVERPAN;
     // If the canvas is narrower than the viewport, centre it rather than
@@ -117,9 +120,22 @@ export function initViewport(canvas, stage) {
 
   function resize() {
     fitK = Math.min(1, stage.clientWidth / DESIGN_W);
-    minK = Math.min(fitK, stage.clientHeight / DESIGN_H);
+    minK = Math.min(fitK, stage.clientHeight / contentH);
     k = clampK(k);
     schedule();
+  }
+
+  /** Re-read positions after folders reflow the page. */
+  function syncLayout() {
+    contentH = 0;
+    for (const b of boxes) {
+      b.y = parseFloat(b.el.style.top) || 0;
+      if (getComputedStyle(b.el).display !== 'none') {
+        contentH = Math.max(contentH, b.y + b.h);
+      }
+    }
+    contentH = Math.max(contentH, stage.clientHeight);
+    resize();
   }
 
   /** Land on the hero at full width — the page as composed, nothing cropped. */
@@ -257,6 +273,7 @@ export function initViewport(canvas, stage) {
       schedule();
     },
     refresh: schedule,
+    syncLayout,
     reset: home,
   };
 }
