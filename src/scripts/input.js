@@ -27,6 +27,7 @@ const HOLD_MS = 400;       // press-and-hold before a card lifts, touch only
 const MOVE_SLOP = 10;      // move further than this first and it is a pan
 const TAP_SLOP = 10;       // moved less than this in total: it was a tap
 const DOUBLE_TAP_MS = 300;
+const MIN_PINCH_SPAN = 24; // px between fingers below which the ratio is noise
 
 export function initInput(stage, canvas, {
   viewport,
@@ -42,6 +43,11 @@ export function initInput(stage, canvas, {
   let lastTap = 0;
   let cardEl = null;
   let captured = null;
+  // Where the last pinch was centred, and whether this gesture ever was one.
+  // Lifting two fingers in sequence turns a pinch into a one-finger pan on
+  // the first lift, so without remembering it the zoom would never settle.
+  let zoomAnchor = null;
+  let wasPinch = false;
   // Velocity is smoothed; one jittery sample should not decide the glide.
   let vx = 0; let vy = 0; let vt = 0;
 
@@ -93,13 +99,17 @@ export function initInput(stage, canvas, {
       if (mode === 'card') dragger?.drop();
       if (!allowPan) { mode = 'idle'; return; }
       mode = 'pinch';
+      wasPinch = true;
       pinch = { ...mid(), k: viewport.getScale() };
+      zoomAnchor = { x: pinch.cx, y: pinch.cy };
       capture(e.pointerId);
       return;
     }
     if (pts.size > 2) return;
 
     travel = 0;
+    wasPinch = false;
+    zoomAnchor = null;
     cardEl = dragger ? e.target.closest?.('[data-artifact]') : null;
 
     if (cardEl && !holdToDrag) {
@@ -135,11 +145,17 @@ export function initInput(stage, canvas, {
 
     if (mode === 'pinch' && pts.size >= 2 && pinch) {
       const m = mid();
-      if (pinch.d > 0) {
-        viewport.panBy(m.cx - pinch.cx, m.cy - pinch.cy);
-        viewport.zoomAt(viewport.getScale() * (m.d / pinch.d), m.cx, m.cy);
-        pinch.cx = m.cx; pinch.cy = m.cy; pinch.d = m.d;
+      // Two fingers landing almost on top of each other give a near-zero
+      // spread; the next frame's ratio would then be enormous.
+      if (pinch.d >= MIN_PINCH_SPAN && m.d >= MIN_PINCH_SPAN) {
+        // Raw, not banded: a banded pan would drag the anchor off the
+        // fingers and the zoom would slide instead of pivot.
+        viewport.panRaw(m.cx - pinch.cx, m.cy - pinch.cy);
+        viewport.zoomAt(viewport.getScale() * (m.d / pinch.d), m.cx, m.cy, true);
+        pinch.d = m.d;
       }
+      pinch.cx = m.cx;
+      pinch.cy = m.cy;
       return;
     }
 
@@ -207,15 +223,24 @@ export function initInput(stage, canvas, {
     clearHold();
     releaseCapture();
     const finishedMode = mode;
+    const pinched = wasPinch;
+    const anchor = zoomAnchor;
     mode = 'idle';
     pinch = null;
+    wasPinch = false;
 
     if (finishedMode === 'card') {
       dragger.drop();
       if (travel > TAP_SLOP) eatClick();
       return;
     }
-    if (finishedMode === 'pinch') { viewport.settle(); return; }
+    // Anything that involved two fingers settles at the pinch midpoint: it
+    // brings the zoom back inside its limits and the pan back inside bounds.
+    // No fling — releasing a pinch should not throw the canvas.
+    if (pinched) {
+      viewport.settle(anchor?.x, anchor?.y);
+      return;
+    }
     if (travel > TAP_SLOP) {
       if (finishedMode === 'pan') viewport.fling(vx, vy);
       return;

@@ -56,6 +56,7 @@ function desktopViewportShim() {
     stopAnimations() {},
     isMap: () => false,
     panBy() {},
+    panRaw() {},
     zoomAt() {},
     settle() {},
     fling() {},

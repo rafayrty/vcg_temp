@@ -22,6 +22,11 @@ const MAX_VELOCITY = 4;    // px/ms cap, so a violent flick stays controllable
 const RUBBER = 0.4;        // resistance past the edge; lower is stiffer
 const SPRING_MS = 380;     // spring back from an overscroll
 const ZOOM_MS = 340;       // double tap and fly-to
+// A pinch may push past the zoom limits and springs back on release. Without
+// this the pinch simply stops dead at the limit while fingers keep moving,
+// which is most of what reads as the zoom being inconsistent.
+const ZOOM_OVERSHOOT = 1.6;
+const ZOOM_SETTLE_MS = 260;
 
 const easeOutCubic = (t) => 1 - (1 - t) ** 3;
 const clampTo = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -147,10 +152,26 @@ export function createViewport(canvas, stage) {
     anim = requestAnimationFrame(step);
   }
 
-  /** Pull back inside the bounds if a gesture left the canvas overscrolled. */
-  function settle() {
+  /** End-of-gesture cleanup: bring both the zoom and the pan back in range.
+      Every terminal path routes through here, so a gesture cannot be left
+      overscrolled or past a zoom limit however it happened to finish. */
+  function settle(cx = stage.clientWidth / 2, cy = stage.clientHeight / 2) {
+    const kk = clampK(k);
+    let tx = x;
+    let ty = y;
+    if (kk !== k) {
+      tx = cx - (cx - x) * (kk / k);
+      ty = cy - (cy - y) * (kk / k);
+    }
+    // Measure the pan overshoot as it will be *after* the zoom snaps back,
+    // so one animation lands both corrections.
+    const k0 = k; const x0 = x; const y0 = y;
+    k = kk; x = tx; y = ty;
     const o = overshoot();
-    if (o.dx || o.dy) animateTo(k, x + o.dx, y + o.dy, SPRING_MS);
+    k = k0; x = x0; y = y0;
+
+    if (kk === k0 && !o.dx && !o.dy) return;
+    animateTo(kk, tx + o.dx, ty + o.dy, kk === k0 ? SPRING_MS : ZOOM_SETTLE_MS);
   }
 
   // These three are declared as plain functions rather than methods: they get
@@ -202,9 +223,21 @@ export function createViewport(canvas, stage) {
       schedule();
     },
 
-    /** Zoom about a fixed screen point, so content under the fingers stays. */
-    zoomAt(nextK, cx, cy) {
-      const kk = clampK(nextK);
+    /** Translate with no edge resistance. A pinch drives pan and zoom in the
+        same frame, and banding the pan mid-pinch drags the anchor point off
+        the fingers — the zoom then slides instead of pivoting. */
+    panRaw(dx, dy) {
+      x += dx;
+      y += dy;
+      schedule();
+    },
+
+    /** Zoom about a fixed screen point, so content under the fingers stays.
+        `soft` lets a live pinch run past the limits; settleZoom brings it back. */
+    zoomAt(nextK, cx, cy, soft = false) {
+      const lo = soft ? minK / ZOOM_OVERSHOOT : minK;
+      const hi = soft ? MAX_K * ZOOM_OVERSHOOT : MAX_K;
+      const kk = Math.min(hi, Math.max(lo, nextK));
       if (kk === k) return;
       x = cx - (cx - x) * (kk / k);
       y = cy - (cy - y) * (kk / k);
