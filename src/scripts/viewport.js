@@ -197,12 +197,18 @@ export function createViewport(canvas, stage) {
     resize();
   }
 
-  /** Open on the masthead at reading scale, against the left margin. */
+  /** Open on the masthead at reading scale.
+      Not the geometric centre: the header is a full-width row with an empty
+      middle, so centring lands on nothing. Anchoring to the leftmost element
+      of the top band puts the wordmark on screen, and everything else is a
+      pan away in both directions. */
   function home() {
     stopAnimations();
     resize();
     k = clampK(START_K);
-    x = -100 * k;   // design x≈100 is the layout's left margin
+    const top = boxes.filter((b) => b.w && b.y < 1200);
+    const anchor = top.length ? Math.min(...top.map((b) => b.x)) : 0;
+    x = -(anchor - 40) * k;
     y = 0;
     schedule();
   }

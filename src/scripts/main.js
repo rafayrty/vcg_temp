@@ -27,6 +27,7 @@ const isMobile = window.matchMedia('(max-width: 900px)').matches;
 
 if (isMobile) {
   document.body.classList.add('explore');
+  applyMobileLayout();
   const viewport = createViewport(canvas, stage);
   const dragger = createDragger({ onMove: viewport.notifyMoved });
   // One recogniser owns every pointer and routes to pan, pinch or card.
@@ -47,6 +48,27 @@ if (isMobile) {
     allowPan: false,        // native page scrolling stays in charge
     holdToDrag: false,      // a mouse has no ambiguity to resolve
   });
+}
+
+/**
+ * Swap the top-level cards onto their phone coordinates.
+ *
+ * render.py emits both layouts: left/top are the desktop composition and
+ * data-mx/data-my the phone one, where cards fan out either side of the
+ * viewport. Same DOM either way — only the coordinates and the canvas size
+ * change, so desktop is completely untouched by this.
+ */
+function applyMobileLayout() {
+  const { mw, mh } = canvas.dataset;
+  if (!mw || !mh) return;
+  for (const el of canvas.querySelectorAll('[data-mx]')) {
+    el.style.left = `${el.dataset.mx}px`;
+    el.style.top = `${el.dataset.my}px`;
+  }
+  canvas.dataset.w = mw;
+  canvas.dataset.h = mh;
+  canvas.style.width = `${mw}px`;
+  canvas.style.height = `${mh}px`;
 }
 
 /** The bits of the viewport API that card dragging needs on desktop. */

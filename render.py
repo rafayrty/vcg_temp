@@ -157,6 +157,87 @@ def effects_shadow(node):
         return ef["boxShadow"]
     return None
 
+# ---- mobile layout -------------------------------------------------------
+# The phone design is its own Figma frame and figma-dump.txt only contains
+# DESKTOP, so this approximates the reference screenshots rather than
+# reproducing them. Two things characterise that design: cards fan out past
+# the phone viewport on both sides while the centre column stays put, and the
+# vertical rhythm is tighter. Both are derived from the desktop's own relative
+# placement, so groupings and reading order survive.
+#
+# Replace this whole block with the real frame once it is exported — the
+# emitted data-mx/data-my contract stays the same.
+MOBILE_SPREAD = 1.9     # horizontal amplification about the design centre
+MOBILE_MAX_SHIFT = 380  # cap on how far one element may travel, design px
+MOBILE_SQUEEZE = 0.45   # fraction of each empty vertical band removed
+
+
+def _merge(spans):
+    out_ = []
+    for a, b in sorted(s for s in spans if s[1] > s[0]):
+        if out_ and a <= out_[-1][1]:
+            out_[-1][1] = max(out_[-1][1], b)
+        else:
+            out_.append([a, b])
+    return out_
+
+
+def mobile_layout(children):
+    """Return {node id: (x, y)} plus the canvas size that layout needs."""
+    # Anything with an extent in either axis, so the hairline rules (height 0)
+    # move with the layout instead of being stranded on desktop coordinates.
+    boxed = [c for c in children if c["abs"][2] or c["abs"][3]]
+    if not boxed:
+        return {}, FRAME_W, maxy
+
+    wide = [c for c in boxed if c["abs"][2]]
+    left = min(c["abs"][0] for c in wide)
+    right = max(c["abs"][0] + c["abs"][2] for c in wide)
+    centre = (left + right) / 2
+
+    # Fan out from the centre: a card already left of centre moves further
+    # left, one on the centre line stays. That is what puts content either
+    # side of the phone viewport instead of all of it inside.
+    #
+    # The travel is capped, because the header is a designed row spanning the
+    # full width — an uncapped fan pulls the masthead and the nav ~1800px
+    # apart and leaves the middle of the row empty.
+    pos = {}
+    for c in boxed:
+        ax, ay, w, _h = c["abs"]
+        shift = ((ax + w / 2) - centre) * (MOBILE_SPREAD - 1)
+        shift = max(-MOBILE_MAX_SHIFT, min(MOBILE_MAX_SHIFT, shift))
+        pos[c["id"]] = [ax + shift, ay]
+
+    shift_x = min(p[0] for p in pos.values())
+    for p in pos.values():
+        p[0] -= shift_x
+
+    # Tighten the vertical rhythm by reclaiming part of every empty band.
+    bands = _merge([[c["abs"][1], c["abs"][1] + c["abs"][3]] for c in boxed])
+    gaps = [(a[1], b[0]) for a, b in zip(bands, bands[1:])]
+
+    def lift(y):
+        total = 0.0
+        for gs, ge in gaps:
+            if ge <= y:
+                total += (ge - gs) * MOBILE_SQUEEZE
+            elif gs < y:
+                total += (y - gs) * MOBILE_SQUEEZE
+            else:
+                break
+        return total
+
+    for c in boxed:
+        pos[c["id"]][1] -= lift(c["abs"][1])
+
+    width = max(pos[c["id"]][0] + c["abs"][2] for c in boxed)
+    height = max(pos[c["id"]][1] + c["abs"][3] for c in boxed)
+    return pos, width, height
+
+
+mobile_pos, MOBILE_W, MOBILE_H = mobile_layout(desktop["children"])
+
 out = []
 
 # Every top-level card is draggable ("Click and drag to rearrange
@@ -346,6 +427,9 @@ def emit(node, pax, pay, is_top=False):
 
     attr = ""
     if is_top:
+        mp = mobile_pos.get(node["id"])
+        if mp:
+            attr += f' data-mx="{mp[0]:.2f}" data-my="{mp[1]:.2f}"'
         if is_card(typ, w, h):
             attr += " data-artifact"
         brand = node_brand.get(node["id"])
@@ -375,7 +459,7 @@ doc = f"""<!DOCTYPE html>
 </head>
 <body>
 <div class="stage" id="stage">
-<div class="canvas" id="canvas" data-w="{W:.0f}" data-h="{H:.0f}" style="position:absolute;left:0;top:0;width:{W:.0f}px;height:{H:.0f}px;background:#fff;transform-origin:top left;overflow:hidden;">
+<div class="canvas" id="canvas" data-w="{W:.0f}" data-h="{H:.0f}" data-mw="{MOBILE_W:.0f}" data-mh="{MOBILE_H:.0f}" style="position:absolute;left:0;top:0;width:{W:.0f}px;height:{H:.0f}px;background:#fff;transform-origin:top left;overflow:hidden;">
 {body}
 </div>
 </div>
