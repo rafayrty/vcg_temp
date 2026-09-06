@@ -34,6 +34,12 @@ const clampTo = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 export function createViewport(canvas, stage) {
   const DESIGN_W = parseFloat(canvas.dataset.w);
   const DESIGN_H = parseFloat(canvas.dataset.h);
+  // The Figma phone frame carries its own window inside the board — the green
+  // bar in the reference. Opening on exactly that rectangle is what makes the
+  // first frame the designed one, with the rest of the board either side.
+  const WINDOW_X = parseFloat(canvas.dataset.mvx);
+  const WINDOW_W = parseFloat(canvas.dataset.mvw);
+  const hasWindow = Number.isFinite(WINDOW_X) && WINDOW_W > 0;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Top-level boxes with their design-space rects read once. Culling tests
@@ -197,19 +203,21 @@ export function createViewport(canvas, stage) {
     resize();
   }
 
-  /** Open on the masthead at reading scale.
-      Not the geometric centre: the header is a full-width row with an empty
-      middle, so centring lands on nothing. Anchoring to the leftmost element
-      of the top band puts the wordmark on screen, and everything else is a
-      pan away in both directions. */
+  /** Open on the frame's own phone window, at the top of the board. */
   function home() {
     stopAnimations();
     resize();
-    k = clampK(START_K);
-    const top = boxes.filter((b) => b.w && b.y < 1200);
-    const anchor = top.length ? Math.min(...top.map((b) => b.x)) : 0;
-    x = -(anchor - 40) * k;
-    y = 0;
+    if (hasWindow) {
+      k = clampK(stage.clientWidth / WINDOW_W);
+      x = -WINDOW_X * k;
+    } else {
+      k = clampK(START_K);
+      const top = boxes.filter((b) => b.w && b.y < 1200);
+      x = -((top.length ? Math.min(...top.map((b) => b.x)) : 0) - 40) * k;
+    }
+    // Start at the first content rather than the frame's empty top margin.
+    const first = boxes.filter((b) => b.w && b.h);
+    y = first.length ? -(Math.min(...first.map((b) => b.y)) - 60) * k : 0;
     schedule();
   }
 

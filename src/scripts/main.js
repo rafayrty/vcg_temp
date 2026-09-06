@@ -60,7 +60,7 @@ if (isMobile) {
  */
 function applyMobileLayout() {
   const { mw, mh } = canvas.dataset;
-  if (!mw || !mh) return;
+  if (!mw || !mh) return false;
   for (const el of canvas.querySelectorAll('[data-mx]')) {
     el.style.left = `${el.dataset.mx}px`;
     el.style.top = `${el.dataset.my}px`;
@@ -69,6 +69,7 @@ function applyMobileLayout() {
   canvas.dataset.h = mh;
   canvas.style.width = `${mw}px`;
   canvas.style.height = `${mh}px`;
+  return true;
 }
 
 /** The bits of the viewport API that card dragging needs on desktop. */

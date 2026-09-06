@@ -158,85 +158,123 @@ def effects_shadow(node):
     return None
 
 # ---- mobile layout -------------------------------------------------------
-# The phone design is its own Figma frame and figma-dump.txt only contains
-# DESKTOP, so this approximates the reference screenshots rather than
-# reproducing them. Two things characterise that design: cards fan out past
-# the phone viewport on both sides while the centre column stays put, and the
-# vertical rhythm is tighter. Both are derived from the desktop's own relative
-# placement, so groupings and reading order survive.
+# Positions come from the real Figma "iPhone 16 - 7" frame (mobile_frame.py),
+# not from anything derived off the desktop. Cards are matched to it by brand
+# and top-to-bottom order, which needs no node ids and survives a re-export.
 #
-# Replace this whole block with the real frame once it is exported — the
-# emitted data-mx/data-my contract stays the same.
-MOBILE_SPREAD = 1.9     # horizontal amplification about the design centre
-MOBILE_MAX_SHIFT = 380  # cap on how far one element may travel, design px
-MOBILE_SQUEEZE = 0.45   # fraction of each empty vertical band removed
+# Whatever the frame does not name — odd furniture, stray groups — keeps its
+# desktop x and has its y interpolated between the two nearest cards that did
+# match, so it stays in the right section instead of being stranded.
+import mobile_frame
+
+MOBILE_W = mobile_frame.CANVAS_W
+MOBILE_H = mobile_frame.CANVAS_H
 
 
-def _merge(spans):
-    out_ = []
-    for a, b in sorted(s for s in spans if s[1] > s[0]):
-        if out_ and a <= out_[-1][1]:
-            out_[-1][1] = max(out_[-1][1], b)
-        else:
-            out_.append([a, b])
-    return out_
+def _text_key(node):
+    """Uppercased, punctuation-light text of a node's whole subtree."""
+    return re.sub(r"[^A-Z0-9@. ]+", " ", " ".join(subtree_texts(node, [])).upper())
 
 
 def mobile_layout(children):
-    """Return {node id: (x, y)} plus the canvas size that layout needs."""
-    # Anything with an extent in either axis, so the hairline rules (height 0)
-    # move with the layout instead of being stranded on desktop coordinates.
-    boxed = [c for c in children if c["abs"][2] or c["abs"][3]]
-    if not boxed:
-        return {}, FRAME_W, maxy
-
-    wide = [c for c in boxed if c["abs"][2]]
-    left = min(c["abs"][0] for c in wide)
-    right = max(c["abs"][0] + c["abs"][2] for c in wide)
-    centre = (left + right) / 2
-
-    # Fan out from the centre: a card already left of centre moves further
-    # left, one on the centre line stays. That is what puts content either
-    # side of the phone viewport instead of all of it inside.
-    #
-    # The travel is capped, because the header is a designed row spanning the
-    # full width — an uncapped fan pulls the masthead and the nav ~1800px
-    # apart and leaves the middle of the row empty.
+    """Return {node id: (x, y)} in the same coordinate space as the desktop."""
     pos = {}
-    for c in boxed:
-        ax, ay, w, _h = c["abs"]
-        shift = ((ax + w / 2) - centre) * (MOBILE_SPREAD - 1)
-        shift = max(-MOBILE_MAX_SHIFT, min(MOBILE_MAX_SHIFT, shift))
-        pos[c["id"]] = [ax + shift, ay]
+    claimed = set()
 
-    shift_x = min(p[0] for p in pos.values())
-    for p in pos.values():
-        p[0] -= shift_x
+    def place(node, pt):
+        pos[node["id"]] = mobile_frame.scaled(pt)
+        claimed.add(node["id"])
 
-    # Tighten the vertical rhythm by reclaiming part of every empty band.
-    bands = _merge([[c["abs"][1], c["abs"][1] + c["abs"][3]] for c in boxed])
-    gaps = [(a[1], b[0]) for a, b in zip(bands, bands[1:])]
+    by_id = {c["id"]: c for c in children}
 
-    def lift(y):
-        total = 0.0
-        for gs, ge in gaps:
-            if ge <= y:
-                total += (ge - gs) * MOBILE_SQUEEZE
-            elif gs < y:
-                total += (y - gs) * MOBILE_SQUEEZE
-            else:
+    # 1. Videos, by the order they appear down the frame.
+    vids = sorted(
+        (c for c in children
+         if any(d["id"] in VIDEO_MAP for d in _descend(c))),
+        key=lambda c: c["abs"][1],
+    )
+    for node, pt in zip(vids, mobile_frame.VIDEOS):
+        place(node, pt)
+
+    # 2. Branded cards: same brand, same top-to-bottom order.
+    for brand, pts in mobile_frame.CARDS.items():
+        group = sorted(
+            (c for c in children
+             if c["id"] not in claimed and node_brand.get(c["id"]) == brand),
+            key=lambda c: c["abs"][1],
+        )
+        for node, pt in zip(group, pts):
+            place(node, pt)
+
+    # 3. Named text blocks.
+    for node in children:
+        if node["id"] in claimed:
+            continue
+        key = _text_key(node)
+        if not key.strip():
+            continue
+        for needle, pt in mobile_frame.TEXTS.items():
+            if needle in key:
+                place(node, pt)
                 break
-        return total
 
-    for c in boxed:
-        pos[c["id"]][1] -= lift(c["abs"][1])
+    # 4. The section rules, top to bottom.
+    rules = sorted(
+        (c for c in children
+         if c["id"] not in claimed and c["type"] == "LINE" and c["abs"][2] > 400),
+        key=lambda c: c["abs"][1],
+    )
+    for node, y in zip(rules, mobile_frame.RULE_YS):
+        place(node, (mobile_frame.RULE_X, y))
 
-    width = max(pos[c["id"]][0] + c["abs"][2] for c in boxed)
-    height = max(pos[c["id"]][1] + c["abs"][3] for c in boxed)
-    return pos, width, height
+    # 5. Founder portraits — tall images above the first section rule.
+    portraits = sorted(
+        (c for c in children
+         if c["id"] not in claimed and c["abs"][1] < 4000
+         and c["abs"][3] > 200 and c["abs"][2] > 100),
+        key=lambda c: c["abs"][1],
+    )
+    for node, pt in zip(portraits, mobile_frame.FOUNDER_IMAGES):
+        place(node, pt)
+
+    # 6. Everything else: keep the desktop x, interpolate y from the anchors
+    #    that did match so each stray lands inside its own section.
+    anchors = sorted(
+        (by_id[i]["abs"][1], pos[i][1]) for i in claimed if i in by_id
+    )
+    if anchors:
+        for node in children:
+            if node["id"] in claimed:
+                continue
+            y = _interp(node["abs"][1], anchors)
+            pos[node["id"]] = (
+                node["abs"][0] + mobile_frame.VIEWPORT_X * mobile_frame.SCALE
+                - 100, y,
+            )
+    return pos
 
 
-mobile_pos, MOBILE_W, MOBILE_H = mobile_layout(desktop["children"])
+def _descend(node):
+    yield node
+    for c in node["children"]:
+        yield from _descend(c)
+
+
+def _interp(y, anchors):
+    """Map a desktop y onto the phone frame using the matched pairs."""
+    if y <= anchors[0][0]:
+        return anchors[0][1] + (y - anchors[0][0])
+    if y >= anchors[-1][0]:
+        return anchors[-1][1] + (y - anchors[-1][0])
+    lo, hi = anchors[0], anchors[-1]
+    for a, b in zip(anchors, anchors[1:]):
+        if a[0] <= y <= b[0]:
+            lo, hi = a, b
+            break
+    span = hi[0] - lo[0]
+    t = 0.0 if span <= 0 else (y - lo[0]) / span
+    return lo[1] + (hi[1] - lo[1]) * t
+
 
 out = []
 
@@ -299,6 +337,9 @@ for c in desktop["children"]:
     if b and (b not in covers or c["abs"][1] < covers[b]["abs"][1]):
         covers[b] = c
 cover_ids = {c["id"]: b for b, c in covers.items()}
+
+# Needs node_brand and subtree_texts, so it runs after the folder grouping.
+mobile_pos = mobile_layout(desktop["children"])
 
 
 def emit(node, pax, pay, is_top=False):
@@ -459,7 +500,7 @@ doc = f"""<!DOCTYPE html>
 </head>
 <body>
 <div class="stage" id="stage">
-<div class="canvas" id="canvas" data-w="{W:.0f}" data-h="{H:.0f}" data-mw="{MOBILE_W:.0f}" data-mh="{MOBILE_H:.0f}" style="position:absolute;left:0;top:0;width:{W:.0f}px;height:{H:.0f}px;background:#fff;transform-origin:top left;overflow:hidden;">
+<div class="canvas" id="canvas" data-w="{W:.0f}" data-h="{H:.0f}" data-mw="{MOBILE_W:.0f}" data-mh="{MOBILE_H:.0f}" data-mvx="{mobile_frame.VIEWPORT_X * mobile_frame.SCALE:.0f}" data-mvw="{mobile_frame.VIEWPORT_DESIGN_W:.0f}" style="position:absolute;left:0;top:0;width:{W:.0f}px;height:{H:.0f}px;background:#fff;transform-origin:top left;overflow:hidden;">
 {body}
 </div>
 </div>
