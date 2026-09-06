@@ -9,15 +9,15 @@
 //                      so it becomes something you move around instead.
 // ============================================================
 
-import { initViewport } from './viewport.js';
-import { initDrag } from './drag.js';
+import { createViewport } from './viewport.js';
+import { createDragger } from './drag.js';
+import { initInput } from './input.js';
 import { initFolders } from './folders.js';
 
 const canvas = document.getElementById('canvas');
 const stage = document.getElementById('stage');
 
-// Desktop scale comes from fit(); mobile's from the viewport. drag.js needs
-// whichever is live to convert cursor travel into design pixels.
+// Desktop scale comes from fit(); on mobile the viewport owns it.
 let scale = 1;
 
 // ponytail: decided once at load. Dragging a desktop window across the
@@ -27,21 +27,42 @@ const isMobile = window.matchMedia('(max-width: 900px)').matches;
 
 if (isMobile) {
   document.body.classList.add('explore');
-  const vp = initViewport(canvas, stage);
-  const drag = initDrag(canvas, {
-    getScale: vp.getScale,
-    holdToDrag: true,       // press and hold to lift, so a swipe still pans
-    onMove: vp.notifyMoved,
-  });
-  vp.setDragPredicate(drag.isActive);
+  const viewport = createViewport(canvas, stage);
+  const dragger = createDragger({ onMove: viewport.notifyMoved });
+  // One recogniser owns every pointer and routes to pan, pinch or card.
+  initInput(stage, canvas, { viewport, dragger, allowPan: true, holdToDrag: true });
   // Folders are a mobile affordance only. Folding moves every card, so the
   // viewport has to re-read the layout before culling against it.
-  initFolders(canvas, { reflow: true, onToggle: vp.syncLayout });
+  initFolders(canvas, { reflow: true, onToggle: viewport.syncLayout });
+  viewport.home();
+  window.addEventListener('resize', viewport.resize);
 } else {
-  // Desktop keeps the authored page exactly as composed — no folding. It is
-  // one long designed scroll and hiding sections would gut it.
+  // Desktop keeps the authored page exactly as composed — no folding, no
+  // canvas. It is one long designed scroll and sectioning it would gut it.
   initScrollMode();
-  initDrag(canvas, { getScale: () => scale });
+  const dragger = createDragger();
+  initInput(stage, canvas, {
+    viewport: desktopViewportShim(),
+    dragger,
+    allowPan: false,        // native page scrolling stays in charge
+    holdToDrag: false,      // a mouse has no ambiguity to resolve
+  });
+}
+
+/** The bits of the viewport API that card dragging needs on desktop. */
+function desktopViewportShim() {
+  return {
+    getScale: () => scale,
+    stopAnimations() {},
+    isMap: () => false,
+    panBy() {},
+    zoomAt() {},
+    settle() {},
+    fling() {},
+    toggleZoom() {},
+    flyTo() {},
+    notifyMoved() {},
+  };
 }
 
 // ============================================================
