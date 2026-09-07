@@ -215,9 +215,21 @@ export function createViewport(canvas, stage) {
       const top = boxes.filter((b) => b.w && b.y < 1200);
       x = -((top.length ? Math.min(...top.map((b) => b.x)) : 0) - 40) * k;
     }
-    // Start at the first content rather than the frame's empty top margin.
-    const first = boxes.filter((b) => b.w && b.h);
-    y = first.length ? -(Math.min(...first.map((b) => b.y)) - 60) * k : 0;
+    // Land where the board actually has something to look at. The opening
+    // window is only ~14% of the board's width, so a band can be busy overall
+    // and still be empty on screen — count what falls inside the real
+    // rectangle, not just the vertical slice.
+    const viewL = -x / k;
+    const viewR = viewL + stage.clientWidth / k;
+    const screen = stage.clientHeight / k;
+    const solid = boxes.filter((b) => b.w && b.h);
+    const across = solid.filter((b) => b.x + b.w > viewL && b.x < viewR);
+    const tops = across.map((b) => b.y).sort((a, b) => a - b);
+    let start = solid.length ? Math.min(...solid.map((b) => b.y)) : 0;
+    for (const t of tops) {
+      if (tops.filter((o) => o >= t && o < t + screen).length >= 3) { start = t; break; }
+    }
+    y = -(start - 60) * k;
     schedule();
   }
 
